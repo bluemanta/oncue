@@ -2,7 +2,11 @@
 import Link from 'next/link';
 import { useState, type ReactNode } from 'react';
 import type { Accent, WordCard } from '../../lib/card';
+import { FAIL_MESSAGE, type Assessment } from '../../lib/assessment';
+import { mockAssessment } from '../../lib/assessment-mock';
 import { useSpeech } from './use-speech';
+import { useRecorder } from './use-recorder';
+import FeedbackView from './feedback-view';
 
 const SEGMENT_ON = 'h-8 rounded-lg bg-card px-3.5 text-sm font-medium text-ink shadow-[0_1px_2px_rgba(27,26,23,0.12)]';
 const SEGMENT_OFF = 'h-8 rounded-lg px-3.5 text-sm text-muted';
@@ -44,12 +48,49 @@ function highlightTarget(sentence: string, surface: string | null): ReactNode {
 export default function CardView({ card, sample }: { card: WordCard; sample: boolean }) {
   const [readExample, setReadExample] = useState(false);
   const [notice, setNotice] = useState('');
+  const [assessment, setAssessment] = useState<Assessment | null>(null);
+  const [round, setRound] = useState(0);
   const { play, loading, error } = useSpeech();
+  const recorder = useRecorder();
 
-  // 跟读评测要等腾讯云口语评测接上，先明说而不是装作能用
-  const pendingRecord = () => setNotice('跟读评测还没接上，下一步做。');
+  /** 跟读的目标：单词，或者第一句例句 */
+  const target = readExample ? (card.examples[0]?.en ?? card.word) : card.word;
 
-  const bottomLine = error || notice || '按住说话，松开看结果';
+  async function startRecording() {
+    setNotice('');
+    const failed = await recorder.start();
+    if (failed) setNotice(FAIL_MESSAGE[failed]);
+  }
+
+  async function finishRecording() {
+    const result = await recorder.stop();
+    if (!result) return;
+    if (!result.ok) {
+      setNotice(FAIL_MESSAGE[result.reason]);
+      return;
+    }
+    // 还没接上腾讯云口语评测，先用假结果把三档界面走通。
+    // 每次轮换一档，方便一次看到读对了 / 基本对 / 不对三种样子。
+    setAssessment(mockAssessment(card, round));
+    setRound(round + 1);
+  }
+
+  if (assessment) {
+    return (
+      <FeedbackView
+        card={card}
+        assessment={assessment}
+        playing={loading === 'standard'}
+        onBack={() => setAssessment(null)}
+        onRetry={() => setAssessment(null)}
+        onPlayStandard={() => play('standard', target, ACCENT, 'slow')}
+      />
+    );
+  }
+
+  const recording = recorder.state === 'recording';
+  const bottomLine = error || notice
+    || (recording ? '正在录…松开看结果' : `按住说话，松开看结果`);
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-[420px] flex-col gap-4 px-5 pt-5 pb-0">
@@ -162,7 +203,15 @@ export default function CardView({ card, sample }: { card: WordCard; sample: boo
           <button type="button" aria-pressed={!readExample} onClick={() => setReadExample(false)} className={!readExample ? SEGMENT_ON : SEGMENT_OFF}>读单词</button>
           <button type="button" aria-pressed={readExample} onClick={() => setReadExample(true)} className={readExample ? SEGMENT_ON : SEGMENT_OFF}>读例句</button>
         </div>
-        <button type="button" onClick={pendingRecord} aria-label="按住跟读" className="flex size-[72px] items-center justify-center rounded-full bg-brand text-white active:bg-brand-dark">
+        <button
+          type="button"
+          aria-label={`按住跟读 ${target}`}
+          onPointerDown={startRecording}
+          onPointerUp={finishRecording}
+          onPointerLeave={() => { if (recording) void finishRecording(); }}
+          onContextMenu={event => event.preventDefault()}
+          className={`flex size-[72px] touch-none items-center justify-center rounded-full text-white transition-transform ${recording ? 'scale-110 bg-poor' : 'bg-brand active:bg-brand-dark'}`}
+        >
           <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <rect x="9" y="3" width="6" height="11" rx="3" />
             <path d="M5.5 11a6.5 6.5 0 0 0 13 0" />

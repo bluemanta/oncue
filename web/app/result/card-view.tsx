@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useState, type ReactNode } from 'react';
 import type { Accent, WordCard } from '../../lib/card';
+import { useSpeech } from './use-speech';
 
 const SEGMENT_ON = 'h-8 rounded-lg bg-card px-3.5 text-sm font-medium text-ink shadow-[0_1px_2px_rgba(27,26,23,0.12)]';
 const SEGMENT_OFF = 'h-8 rounded-lg px-3.5 text-sm text-muted';
@@ -36,9 +37,12 @@ export default function CardView({ card, sample }: { card: WordCard; sample: boo
   const [accent, setAccent] = useState<Accent>('us');
   const [readExample, setReadExample] = useState(false);
   const [notice, setNotice] = useState('');
+  const { play, loading, error } = useSpeech();
 
-  // 读音和跟读要等腾讯云语音合成、口语评测接上，先明说而不是装作能用
-  const pending = (what: string) => () => setNotice(`${what}还没接上，下一步做。`);
+  // 跟读评测要等腾讯云口语评测接上，先明说而不是装作能用
+  const pendingRecord = () => setNotice('跟读评测还没接上，下一步做。');
+
+  const bottomLine = error || notice || '按住说话，松开看结果';
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-[420px] flex-col gap-4 px-5 pt-5 pb-0">
@@ -87,13 +91,13 @@ export default function CardView({ card, sample }: { card: WordCard; sample: boo
         </div>
 
         <div className="mt-1.5 flex gap-2.5">
-          <button type="button" onClick={pending('标准读音')} className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border border-line-strong bg-card text-[15px] text-ink active:bg-fill">
+          <button type="button" onClick={() => play('slow', card.word, accent, 'slow')} disabled={loading === 'slow'} aria-label={`慢速播放 ${card.word}`} className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border border-line-strong bg-card text-[15px] text-ink active:bg-fill disabled:opacity-50">
             <SpeakerIcon waves={1} />
-            <span>慢速</span>
+            <span>{loading === 'slow' ? '加载中…' : '慢速'}</span>
           </button>
-          <button type="button" onClick={pending('标准读音')} className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border border-line-strong bg-card text-[15px] text-ink active:bg-fill">
+          <button type="button" onClick={() => play('normal', card.word, accent, 'normal')} disabled={loading === 'normal'} aria-label={`常速播放 ${card.word}`} className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border border-line-strong bg-card text-[15px] text-ink active:bg-fill disabled:opacity-50">
             <SpeakerIcon waves={2} />
-            <span>常速</span>
+            <span>{loading === 'normal' ? '加载中…' : '常速'}</span>
           </button>
         </div>
       </section>
@@ -139,8 +143,8 @@ export default function CardView({ card, sample }: { card: WordCard; sample: boo
                 <p className="font-latin text-[16px] leading-[1.5]">{example.en}</p>
                 <p className="text-[13px] leading-[1.5] text-muted">{example.zh}</p>
               </div>
-              <button type="button" onClick={pending('例句朗读')} aria-label={`播放例句 ${index + 1}`} className="flex size-11 shrink-0 items-center justify-center rounded-full bg-fill text-ink active:bg-line">
-                <SpeakerIcon waves={1} />
+              <button type="button" onClick={() => play(`ex${index}`, example.en, accent, 'normal')} disabled={loading === `ex${index}`} aria-label={`播放例句 ${index + 1}`} className="flex size-11 shrink-0 items-center justify-center rounded-full bg-fill text-ink active:bg-line disabled:opacity-50">
+                <SpeakerIcon waves={loading === `ex${index}` ? 2 : 1} />
               </button>
             </div>
           ))}
@@ -154,14 +158,14 @@ export default function CardView({ card, sample }: { card: WordCard; sample: boo
           <button type="button" aria-pressed={!readExample} onClick={() => setReadExample(false)} className={!readExample ? SEGMENT_ON : SEGMENT_OFF}>读单词</button>
           <button type="button" aria-pressed={readExample} onClick={() => setReadExample(true)} className={readExample ? SEGMENT_ON : SEGMENT_OFF}>读例句</button>
         </div>
-        <button type="button" onClick={pending('跟读评测')} aria-label="按住跟读" className="flex size-[72px] items-center justify-center rounded-full bg-brand text-white active:bg-brand-dark">
+        <button type="button" onClick={pendingRecord} aria-label="按住跟读" className="flex size-[72px] items-center justify-center rounded-full bg-brand text-white active:bg-brand-dark">
           <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <rect x="9" y="3" width="6" height="11" rx="3" />
             <path d="M5.5 11a6.5 6.5 0 0 0 13 0" />
             <path d="M12 17.5V21" />
           </svg>
         </button>
-        <p role="status" className="text-[13px] text-muted">{notice || '按住说话，松开看结果'}</p>
+        <p role="status" className="text-[13px] text-muted">{bottomLine}</p>
       </div>
     </main>
   );

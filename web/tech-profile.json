@@ -16,6 +16,14 @@
       "reason": "调用腾讯云 LKEAP 的 DeepSeek 生成结果卡片。选单产品包（74KB）而不是全量 SDK（45MB）。腾讯云 API 需要 TC3-HMAC-SHA256 签名，自己实现容易出错。仅在服务端使用。"
     },
     {
+      "dependency": "tencentcloud-sdk-nodejs-tts",
+      "reason": "调用腾讯云语音合成生成单词和例句的标准读音（F4）。同样选单产品包（40KB）。仅在服务端使用。"
+    },
+    {
+      "dependency": "cos-nodejs-sdk-v5",
+      "reason": "把合成好的音频存进腾讯云 COS 私有桶并复用，同一个词只合成一次（PRD 技术方案「音频存储」）。官方对象存储 SDK，需要自己的签名实现。仅在服务端使用。"
+    },
+    {
       "dependency": "uuid (overrides 11.1.1)",
       "reason": "SDK 间接依赖的 uuid ^9 有 GHSA-w5hq-g745-h8pq。SDK 只用 uuid.v4()、不传 buf，实际不受影响，但用 overrides 升到 11.1.1 让 npm audit 保持干净。已实测签名调用正常。"
     }

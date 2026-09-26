@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>OnCue单词 跟读反馈</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&amp;family=Noto+Sans+SC:wght@400;500;700&amp;family=Noto+Sans:wght@400;500&amp;display=swap">
+<style>
+body{margin:0;font-family:'Noto Sans SC',sans-serif;color:#1B1A17;background:#F5F2EA}
+a{color:#1E5A8A}a:hover{color:#153F62}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; padding: 20px 20px 32px; display: flex; flex-direction: column; gap: 18px; background: #F5F2EA">
+<div style="display: flex; align-items: center; height: 44px">
+<a href="Result.dc.html" style="display: flex; align-items: center; gap: 4px; height: 44px; padding-right: 12px; font-size: 15px; color: #1B1A17; text-decoration: none">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+<span>返回单词</span>
+</a>
+</div>
+<div style="display: flex; align-items: baseline; gap: 10px">
+<span style="font-family: Fraunces, serif; font-size: 32px; font-weight: 600; letter-spacing: -0.5px">schedule</span>
+<span style="font-family: 'Noto Sans', sans-serif; font-size: 16px; color: #5C574D">/ˈskedʒ.uːl/</span>
+</div>
+
+<sc-if value="{{isGood}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; align-items: center; gap: 14px; padding: 18px; border-radius: 18px; background: #E4F0E7">
+<div style="flex-shrink: 0; width: 48px; height: 48px; border-radius: 24px; background: #2F6B45; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></div>
+<div style="display: flex; flex-direction: column; gap: 2px"><div style="font-size: 20px; font-weight: 700; color: #2F6B45">读对了</div><div style="font-size: 14px; color: #3F3B34">每个音都到位，重音也在 SCHED 上。</div></div>
+</div>
+<div style="display: flex; gap: 6px; flex-wrap: wrap">
+<span style="padding: 6px 10px; border-radius: 8px; background: #FFFFFF; border: 1px solid #E3DDD0; font-family: 'Noto Sans', sans-serif; font-size: 15px">s</span>
+<span style="padding: 6px 10px; border-radius: 8px; background: #FFFFFF; border: 1px solid #E3DDD0; font-family: 'Noto Sans', sans-serif; font-size: 15px">k</span>
+<span style="padding: 6px 10px; border-radius: 8px; background: #FFFFFF; border: 1px solid #E3DDD0; font-family: 'Noto Sans', sans-serif; font-size: 15px">e</span>
+<span style="padding: 6px 10px; border-radius: 8px; background: #FFFFFF; border: 1px solid #E3DDD0; font-family: 'Noto Sans', sans-serif; font-size: 15px">dʒ</span>
+<span style="padding: 6px 10px; border-radius: 8px; background: #FFFFFF; border: 1px solid #E3DDD0; font-family: 'Noto Sans', sans-serif; font-size: 15px">uː</span>
+<span style="padding: 6px 10px; border-radius: 8px; background: #FFFFFF; border: 1px solid #E3DDD0; font-family: 'Noto Sans', sans-serif; font-size: 15px">l</span>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isMid}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; align-items: center; gap: 14px; padding: 18px; border-radius: 18px; background: #F8EBD9">
+<div style="flex-shrink: 0; width: 48px; height: 48px; border-radius: 24px; background: #8A4B00; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v6"></path><path d="M12 17h.01"></path></svg></div>
+<div style="display: flex; flex-direction: column; gap: 2px"><div style="font-size: 20px; font-weight: 700; color: #8A4B00">基本对</div><div style="font-size: 14px; color: #3F3B34">只有 1 个地方要改。</div></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div style="font-size: 12px; font-weight: 500; color: #5C574D">问题在这里</div>
+<div style="display: flex; gap: 6px; flex-wrap: wrap">
+<span style="padding: 6px 10px; border-radius: 8px; background: #FFFFFF; border: 1px solid #E3DDD0; font-family: 'Noto Sans', sans-serif; font-size: 15px">s</span>
+<span style="padding: 6px 10px; border-radius: 8px; background: #FFFFFF; border: 1px solid #E3DDD0; font-family: 'Noto Sans', sans-serif; font-size: 15px">k</span>
+<span style="padding: 6px 10px; border-radius: 8px; background: #FFFFFF; border: 1px solid #E3DDD0; font-family: 'Noto Sans', sans-serif; font-size: 15px">e</span>
+<span style="padding: 6px 10px; border-radius: 8px; background: #FFFFFF; border: 1px solid #E3DDD0; font-family: 'Noto Sans', sans-serif; font-size: 15px">dʒ</span>
+<span style="padding: 6px 10px; border-radius: 8px; background: #FFFFFF; border: 1px solid #E3DDD0; font-family: 'Noto Sans', sans-serif; font-size: 15px">uː</span>
+<span style="padding: 6px 10px; border-radius: 8px; background: #F8EBD9; border: 2px solid #8A4B00; font-family: 'Noto Sans', sans-serif; font-size: 15px; font-weight: 500; color: #8A4B00">l 没读出来</span>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 16px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E3DDD0">
+<div style="font-size: 12px; font-weight: 500; color: #5C574D">怎么改</div>
+<div style="font-size: 16px; line-height: 1.6">结尾的 /l/ 被吞掉了，听起来像 “skedʒu”。读完 /uː/ 后，舌尖抵住上牙龈，收一个轻轻的 /l/。</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isBad}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; align-items: center; gap: 14px; padding: 18px; border-radius: 18px; background: #F7E1DE">
+<div style="flex-shrink: 0; width: 48px; height: 48px; border-radius: 24px; background: #A3261D; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7l10 10"></path><path d="M17 7L7 17"></path></svg></div>
+<div style="display: flex; flex-direction: column; gap: 2px"><div style="font-size: 20px; font-weight: 700; color: #A3261D">不对</div><div style="font-size: 14px; color: #3F3B34">重音放错了位置。</div></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div style="font-size: 12px; font-weight: 500; color: #5C574D">重音对比</div>
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E3DDD0">
+<div style="display: flex; align-items: center; justify-content: space-between"><span style="font-size: 13px; color: #5C574D">你读的</span><span style="font-family: 'Noto Sans', sans-serif; font-size: 18px">sched · <strong style="color: #A3261D">ULE</strong></span></div>
+<div style="height: 1px; background: #EEE9DF"></div>
+<div style="display: flex; align-items: center; justify-content: space-between"><span style="font-size: 13px; color: #5C574D">标准读法</span><span style="font-family: 'Noto Sans', sans-serif; font-size: 18px"><strong style="color: #2F6B45">SCHED</strong> · ule</span></div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 16px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E3DDD0">
+<div style="font-size: 12px; font-weight: 500; color: #5C574D">怎么改</div>
+<div style="font-size: 16px; line-height: 1.6">把力气放在第一个音节 SCHED，读得重一点、长一点；后面的 ule 轻轻带过。先听一遍慢读，再跟一遍。</div>
+</div>
+</div>
+</sc-if>
+
+<div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px">
+<sc-if value="{{isGood}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<a href="Main.dc.html" style="display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 14px; background: #1E5A8A; color: #FFFFFF; font-size: 16px; font-weight: 500; text-decoration: none">查下一个词</a>
+<a href="Result.dc.html" style="display: flex; align-items: center; justify-content: center; height: 48px; border-radius: 14px; border: 1px solid #D6CFBF; background: #FFFFFF; color: #1B1A17; font-size: 15px; text-decoration: none">再练一遍</a>
+</div>
+</sc-if>
+<sc-if value="{{isMid}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; gap: 10px">
+<button type="button" style="flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 6px; height: 52px; border: 1px solid #D6CFBF; border-radius: 14px; background: #FFFFFF; font-family: 'Noto Sans SC', sans-serif; font-size: 15px; color: #1B1A17; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10v4h4l5 4V6L8 10H4z"></path><path d="M16 9.5a3.5 3.5 0 0 1 0 5"></path></svg><span>听标准读音</span></button>
+<a href="Feedback.dc.html" style="flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 6px; height: 52px; border-radius: 14px; background: #1E5A8A; color: #FFFFFF; font-size: 15px; font-weight: 500; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5.5 11a6.5 6.5 0 0 0 13 0"></path><path d="M12 17.5V21"></path></svg><span>再读一遍</span></a>
+</div>
+</sc-if>
+<sc-if value="{{isBad}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<button type="button" style="display: flex; align-items: center; justify-content: center; gap: 6px; height: 52px; border: none; border-radius: 14px; background: #1E5A8A; font-family: 'Noto Sans SC', sans-serif; font-size: 16px; font-weight: 500; color: #FFFFFF; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10v4h4l5 4V6L8 10H4z"></path><path d="M16 9.5a3.5 3.5 0 0 1 0 5"></path></svg><span>先听慢读</span></button>
+<a href="Feedback.dc.html" style="display: flex; align-items: center; justify-content: center; gap: 6px; height: 48px; border-radius: 14px; border: 1px solid #D6CFBF; background: #FFFFFF; color: #1B1A17; font-size: 15px; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5.5 11a6.5 6.5 0 0 0 13 0"></path><path d="M12 17.5V21"></path></svg><span>跟读一遍</span></a>
+</div>
+</sc-if>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"result":{"editor":"enum","options":["读对了","基本对","不对"],"default":"基本对"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+var r = this.props.result ?? '基本对';
+return {
+isGood: r === '读对了',
+isMid: r === '基本对',
+isBad: r === '不对'
+};
+}
+}
+</script>
+</body>
+</html>

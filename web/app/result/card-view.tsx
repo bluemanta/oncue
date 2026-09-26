@@ -2,10 +2,11 @@
 import Link from 'next/link';
 import { useState, type ReactNode } from 'react';
 import type { Accent, WordCard } from '../../lib/card';
-import { FAIL_MESSAGE, type Assessment } from '../../lib/assessment';
+import { FAIL_MESSAGE, type Assessment, type AssessmentResult } from '../../lib/assessment';
 import { mockAssessment } from '../../lib/assessment-mock';
 import { useSpeech } from './use-speech';
 import { useRecorder } from './use-recorder';
+import { toWav16kMono } from './wav';
 import FeedbackView from './feedback-view';
 
 const SEGMENT_ON = 'h-8 rounded-lg bg-card px-3.5 text-sm font-medium text-ink shadow-[0_1px_2px_rgba(27,26,23,0.12)]';
@@ -72,6 +73,7 @@ export default function CardView({ card, sample }: { card: WordCard; sample: boo
   const [notice, setNotice] = useState('');
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [round, setRound] = useState(0);
+  const [assessing, setAssessing] = useState(false);
   const { play, loading, error } = useSpeech();
   const recorder = useRecorder();
 
@@ -91,14 +93,38 @@ export default function CardView({ card, sample }: { card: WordCard; sample: boo
       setNotice(FAIL_MESSAGE[result.reason]);
       return;
     }
-    if (!MOCK_ASSESSMENT) {
-      // 录音是好的，只是还没地方送去评测——如实说，不编一个结果出来
-      setNotice(`录到了 ${(result.recording.durationMs / 1000).toFixed(1)} 秒。但跟读评测还没接上，下周做。`);
+    if (MOCK_ASSESSMENT) {
+      // 只在本地调界面时用，轮换三档
+      setAssessment(mockAssessment(card, round));
+      setRound(round + 1);
       return;
     }
-    // 每次轮换一档，方便一次看到读对了 / 基本对 / 不对三种样子
-    setAssessment(mockAssessment(card, round));
-    setRound(round + 1);
+
+    setAssessing(true);
+    setNotice('正在评测…');
+    try {
+      // 评测服务只收 16k 单声道 PCM，浏览器录的格式要先转
+      const wav = await toWav16kMono(result.recording.blob);
+      const form = new FormData();
+      form.append('audio', wav, 'recording.wav');
+      form.append('refText', target);
+      form.append('mode', readExample ? 'sentence' : 'word');
+      form.append('card', JSON.stringify(card));
+
+      const response = await fetch('/api/assess', { method: 'POST', body: form });
+      if (!response.ok) throw new Error('assess_failed');
+      const data: AssessmentResult = await response.json();
+      if (!data.ok) {
+        setNotice(data.message);
+        return;
+      }
+      setNotice('');
+      setAssessment(data.assessment);
+    } catch {
+      setNotice('评测没跑通，再试一次。');
+    } finally {
+      setAssessing(false);
+    }
   }
 
   if (assessment) {
@@ -232,11 +258,12 @@ export default function CardView({ card, sample }: { card: WordCard; sample: boo
         <button
           type="button"
           aria-label={`按住跟读 ${target}`}
-          onPointerDown={startRecording}
+          disabled={assessing}
+          onPointerDown={assessing ? undefined : startRecording}
           onPointerUp={finishRecording}
           onPointerLeave={() => { if (recording) void finishRecording(); }}
           onContextMenu={event => event.preventDefault()}
-          className={`flex size-[72px] touch-none items-center justify-center rounded-full text-white transition-transform ${recording ? 'scale-110 bg-poor' : 'bg-brand active:bg-brand-dark'}`}
+          className={`flex size-[72px] touch-none items-center justify-center rounded-full text-white transition-transform ${recording ? 'scale-110 bg-poor' : 'bg-brand active:bg-brand-dark'} ${assessing ? 'opacity-50' : ''}`}
         >
           <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <rect x="9" y="3" width="6" height="11" rx="3" />

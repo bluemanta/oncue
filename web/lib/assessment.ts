@@ -18,8 +18,14 @@ export type Phoneme = {
 
 export type StressCompare = {
   syllables: string[];
-  /** 你读的时候重音落在哪个音节 */
-  yours: number;
+  /**
+   * 你读的时候重音落在哪个音节。
+   *
+   * 为 null 表示「知道重音读错了，但说不准你把重音放到了哪个音节」——
+   * 评测服务给的是逐音素的重音标记，音素和音节对不上号。
+   * 这种情况只显示标准读法，不编一个「你读的」出来。
+   */
+  yours: number | null;
   /** 标准读法的重音在哪个音节 */
   standard: number;
 };

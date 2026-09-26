@@ -124,13 +124,18 @@ export default function FeedbackView({
         <div className="flex flex-col gap-2.5">
           <h2 className="text-xs font-medium text-muted">重音对比</h2>
           <div className="flex flex-col gap-2 rounded-2xl border border-line bg-card px-4 py-3.5">
+            {/* 定位不到用户把重音放哪了就不显示这一行，不编一个「你读的」出来 */}
+            {assessment.stress.yours !== null && (
+              <>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[13px] text-muted">你读的</span>
+                  <Syllables syllables={assessment.stress.syllables} stressIndex={assessment.stress.yours} color="text-poor" />
+                </div>
+                <div className="h-px bg-line-soft" />
+              </>
+            )}
             <div className="flex items-center justify-between gap-3">
-              <span className="text-[13px] text-muted">你读的</span>
-              <Syllables syllables={assessment.stress.syllables} stressIndex={assessment.stress.yours} color="text-poor" />
-            </div>
-            <div className="h-px bg-line-soft" />
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-[13px] text-muted">标准读法</span>
+              <span className="text-[13px] text-muted">{assessment.stress.yours === null ? '重音应该在' : '标准读法'}</span>
               <Syllables syllables={assessment.stress.syllables} stressIndex={assessment.stress.standard} color="text-good" />
             </div>
           </div>

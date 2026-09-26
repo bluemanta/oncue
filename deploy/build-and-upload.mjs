@@ -48,12 +48,14 @@ const chunkText = fs.readdirSync(chunkDir)
   .filter(f => f.endsWith('.js'))
   .map(f => fs.readFileSync(path.join(chunkDir, f), 'utf8'))
   .join('\n');
+// 假结果的三档文案只存在于 mock 里；真结果的文案由服务端生成，不会进前端包
 const mockHits = (chunkText.match(/读对了|基本对|重音放错了位置/g) || []).length;
-const honestHits = (chunkText.match(/录到了/g) || []).length;
+// 真实评测那条路必须在：前端要 POST 到 /api/assess
+const realHits = (chunkText.match(/\/api\/assess/g) || []).length;
 console.log(`  假结果文案 ${mockHits} 处（必须为 0）`);
-console.log(`  诚实提示文案 ${honestHits} 处（必须 ≥ 1）`);
+console.log(`  真实评测调用 ${realHits} 处（必须 ≥ 1）`);
 if (mockHits > 0) throw new Error('构建产物里带着假的跟读结果，拒绝上传。检查 NEXT_PUBLIC_MOCK_ASSESSMENT。');
-if (honestHits === 0) throw new Error('构建产物里找不到诚实提示，说明分支被编译错了，拒绝上传。');
+if (realHits === 0) throw new Error('构建产物里找不到真实评测调用，分支被编译错了，拒绝上传。');
 console.log('  通过');
 
 console.log('\n== 2. 打包 ==');
@@ -79,6 +81,7 @@ const SERVER_KEYS = [
   'LKEAP_REGION', 'LKEAP_MODEL', 'CARD_PROVIDER',
   'TTS_REGION', 'TTS_VOICE_US', 'TTS_SLOW_SPEED',
   'COS_BUCKET', 'COS_REGION',
+  'TENCENT_APPID', 'SOE_SCORE_COEFF', 'SOE_GOOD_MIN', 'SOE_POOR_MAX',
 ];
 const envFile = '/tmp/oncue-server.env';
 fs.writeFileSync(envFile, SERVER_KEYS.filter(k => env[k]).map(k => `${k}=${env[k]}`).join('\n') + '\n', { mode: 0o600 });

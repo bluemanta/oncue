@@ -1,9 +1,9 @@
 import Link from 'next/link';
+import type { ReactNode } from 'react';
+import { getCardProvider } from '../../lib/providers';
+import CardView from './card-view';
 
-export default async function ResultPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
-  const { q } = await searchParams;
-  const query = q?.trim() ?? '';
-
+function Shell({ children }: { children: ReactNode }) {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-[420px] flex-col gap-4 px-5 pt-5 pb-8">
       <div className="flex h-11 items-center">
@@ -14,20 +14,36 @@ export default async function ResultPage({ searchParams }: { searchParams: Promi
           <span>返回</span>
         </Link>
       </div>
-
-      {query ? (
-        <div className="rounded-xl bg-fill-warm px-3.5 py-3 text-[14px] leading-[1.6] text-ink-soft">
-          <span className="mr-1.5 text-xs font-medium text-muted">你输入的</span>
-          {query}
-        </div>
-      ) : (
-        <p className="text-[15px] leading-[1.6] text-muted">没有收到要查的内容，回上一页再试一次。</p>
-      )}
-
-      <div className="flex flex-col gap-1.5 rounded-[20px] border border-dashed border-line bg-card p-5">
-        <div className="text-[15px] font-medium">结果卡片还没做</div>
-        <p className="text-[13px] leading-[1.6] text-muted">下一步在这里放释义、音标、易错点、例句和跟读入口。现在这一页只用来确认首页的输入有没有正确传过来。</p>
-      </div>
+      {children}
     </main>
   );
+}
+
+export default async function ResultPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+  const { q } = await searchParams;
+  const query = q?.trim() ?? '';
+
+  if (!query) {
+    return (
+      <Shell>
+        <p className="text-[15px] leading-[1.6] text-muted">没有收到要查的内容，回上一页再试一次。</p>
+      </Shell>
+    );
+  }
+
+  const provider = getCardProvider();
+  const result = await provider.generateCard(query);
+
+  if (!result.ok) {
+    return (
+      <Shell>
+        <div className="flex flex-col gap-1.5 rounded-[20px] border border-line bg-card p-5">
+          <p className="text-[15px] font-medium">{result.message}</p>
+          <p className="text-[13px] leading-[1.6] text-muted">换一个词或者把整句一起贴进来再试。</p>
+        </div>
+      </Shell>
+    );
+  }
+
+  return <CardView card={result.card} sample={provider.name === 'sample'} />;
 }

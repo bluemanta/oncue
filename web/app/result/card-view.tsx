@@ -20,6 +20,15 @@ const SEGMENT_OFF = 'h-8 rounded-lg px-3.5 text-sm text-muted';
 const ACCENT: Accent = 'us';
 
 /**
+ * 是否用假的评测结果。
+ *
+ * 只在本地开发时打开（.env.local 里设 NEXT_PUBLIC_MOCK_ASSESSMENT=1），
+ * 用来看三档反馈界面的样子。线上一定要关着——假的发音反馈比没有反馈更糟，
+ * 用户可能真以为自己读对了。接上腾讯云口语评测后这个开关整个删掉。
+ */
+const MOCK_ASSESSMENT = process.env.NEXT_PUBLIC_MOCK_ASSESSMENT === '1';
+
+/**
  * 单词标题的字号。
  *
  * 设计稿的 44px 是按 schedule 这种长度画的，但 indemnification、
@@ -82,8 +91,12 @@ export default function CardView({ card, sample }: { card: WordCard; sample: boo
       setNotice(FAIL_MESSAGE[result.reason]);
       return;
     }
-    // 还没接上腾讯云口语评测，先用假结果把三档界面走通。
-    // 每次轮换一档，方便一次看到读对了 / 基本对 / 不对三种样子。
+    if (!MOCK_ASSESSMENT) {
+      // 录音是好的，只是还没地方送去评测——如实说，不编一个结果出来
+      setNotice(`录到了 ${(result.recording.durationMs / 1000).toFixed(1)} 秒。但跟读评测还没接上，下周做。`);
+      return;
+    }
+    // 每次轮换一档，方便一次看到读对了 / 基本对 / 不对三种样子
     setAssessment(mockAssessment(card, round));
     setRound(round + 1);
   }

@@ -19,6 +19,19 @@ const SEGMENT_OFF = 'h-8 rounded-lg px-3.5 text-sm text-muted';
  */
 const ACCENT: Accent = 'us';
 
+/**
+ * 单词标题的字号。
+ *
+ * 设计稿的 44px 是按 schedule 这种长度画的，但 indemnification、
+ * infrastructure 这类长词在 44px 下会撑出卡片（实测 330px 内容挤 293px 空间）。
+ * 按长度分三档缩一缩，超长的还会换行。
+ */
+function titleSize(word: string): string {
+  if (word.length <= 11) return 'text-[44px] leading-none';
+  if (word.length <= 15) return 'text-[34px] leading-[1.05]';
+  return 'text-[26px] leading-[1.1]';
+}
+
 function SpeakerIcon({ waves = 1 }: { waves?: number }) {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -117,7 +130,7 @@ export default function CardView({ card, sample }: { card: WordCard; sample: boo
       )}
 
       <section className="flex flex-col gap-2.5 rounded-[20px] border border-line bg-card p-5">
-        <h1 className="font-display text-[44px] leading-none font-semibold tracking-[-0.8px]">{card.word}</h1>
+        <h1 className={`font-display font-semibold tracking-[-0.8px] break-words ${titleSize(card.word)}`}>{card.word}</h1>
 
         <div className="flex flex-wrap items-center gap-2.5">
           <span className="font-latin text-lg text-ink-soft">

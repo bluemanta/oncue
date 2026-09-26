@@ -84,8 +84,9 @@ export default function FeedbackView({
         </button>
       </div>
 
-      <div className="flex items-baseline gap-2.5">
-        <span className="font-display text-[32px] font-semibold tracking-[-0.5px]">{card.word}</span>
+      {/* 长单词要能换行，不然 indemnification 这类词会撑出屏幕 */}
+      <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
+        <span className={`font-display font-semibold tracking-[-0.5px] break-words ${card.word.length > 14 ? 'text-2xl' : 'text-[32px]'}`}>{card.word}</span>
         <span className="font-latin text-base text-muted">{card.ipa.us}</span>
       </div>
 

@@ -1,14 +1,20 @@
 import type { CardProvider } from './types';
 import { sampleProvider } from './sample';
+import { lkeapProvider } from './lkeap';
 
 export type { CardProvider } from './types';
 
 /**
  * 选择当前使用的供应商。
  *
- * 目前只有样本数据。接上腾讯云 DeepSeek 后，这里按环境变量 CARD_PROVIDER 分支，
- * 默认走真接口，设成 sample 时用样本（方便断网或没有密钥时改界面）。
+ * CARD_PROVIDER=sample 时用手写样本——断网、没密钥或者只想改界面时很方便。
+ * 以后接 MiniMax 或混元，在这里加一个分支即可，卡片界面不用动。
  */
 export function getCardProvider(): CardProvider {
-  return sampleProvider;
+  switch (process.env.CARD_PROVIDER) {
+    case 'sample':
+      return sampleProvider;
+    default:
+      return lkeapProvider;
+  }
 }

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "projectName": "oncue",
+  "template": "web-app",
+  "templateVersion": "0.1.0",
+  "reason": "OnCue单词：手机网页，需要服务端接口保管腾讯云密钥并代理 DeepSeek 释义、语音合成与口语评测。",
+  "runtime": "local-server",
+  "storage": "none",
+  "python": {
+    "enabled": false,
+    "reason": ""
+  },
+  "exceptions": [],
+  "createdAt": "2026-09-26T09:03:17.781Z"
+}

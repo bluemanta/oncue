@@ -7,6 +7,14 @@ import { useSpeech } from './use-speech';
 const SEGMENT_ON = 'h-8 rounded-lg bg-card px-3.5 text-sm font-medium text-ink shadow-[0_1px_2px_rgba(27,26,23,0.12)]';
 const SEGMENT_OFF = 'h-8 rounded-lg px-3.5 text-sm text-muted';
 
+/**
+ * 朗读用的口音。
+ *
+ * 腾讯云的英文音色实听下来都是美音，没有英音可选，所以界面上暂时不放美/英切换。
+ * 卡片数据里两种音标都还在（ipa.us / ipa.uk），等有了英音音色，把切换加回来即可。
+ */
+const ACCENT: Accent = 'us';
+
 function SpeakerIcon({ waves = 1 }: { waves?: number }) {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -34,7 +42,6 @@ function highlightTarget(sentence: string, surface: string | null): ReactNode {
 }
 
 export default function CardView({ card, sample }: { card: WordCard; sample: boolean }) {
-  const [accent, setAccent] = useState<Accent>('us');
   const [readExample, setReadExample] = useState(false);
   const [notice, setNotice] = useState('');
   const { play, loading, error } = useSpeech();
@@ -69,16 +76,13 @@ export default function CardView({ card, sample }: { card: WordCard; sample: boo
       )}
 
       <section className="flex flex-col gap-2.5 rounded-[20px] border border-line bg-card p-5">
-        <div className="flex items-end justify-between gap-3">
-          <h1 className="font-display text-[44px] leading-none font-semibold tracking-[-0.8px]">{card.word}</h1>
-          <div role="group" aria-label="读音口音" className="flex shrink-0 rounded-[10px] bg-fill p-[3px]">
-            <button type="button" aria-pressed={accent === 'us'} onClick={() => setAccent('us')} className={accent === 'us' ? SEGMENT_ON : SEGMENT_OFF}>美</button>
-            <button type="button" aria-pressed={accent === 'uk'} onClick={() => setAccent('uk')} className={accent === 'uk' ? SEGMENT_ON : SEGMENT_OFF}>英</button>
-          </div>
-        </div>
+        <h1 className="font-display text-[44px] leading-none font-semibold tracking-[-0.8px]">{card.word}</h1>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          <span className="font-latin text-lg text-ink-soft">{card.ipa[accent]}</span>
+          <span className="font-latin text-lg text-ink-soft">
+            <span className="mr-1.5 font-sans text-[13px] text-muted">美</span>
+            {card.ipa[ACCENT]}
+          </span>
           <span className="text-[13px] text-muted">
             重音在{' '}
             {card.syllables.map((syllable, index) => (
@@ -91,11 +95,11 @@ export default function CardView({ card, sample }: { card: WordCard; sample: boo
         </div>
 
         <div className="mt-1.5 flex gap-2.5">
-          <button type="button" onClick={() => play('slow', card.word, accent, 'slow')} disabled={loading === 'slow'} aria-label={`慢速播放 ${card.word}`} className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border border-line-strong bg-card text-[15px] text-ink active:bg-fill disabled:opacity-50">
+          <button type="button" onClick={() => play('slow', card.word, ACCENT, 'slow')} disabled={loading === 'slow'} aria-label={`慢速播放 ${card.word}`} className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border border-line-strong bg-card text-[15px] text-ink active:bg-fill disabled:opacity-50">
             <SpeakerIcon waves={1} />
             <span>{loading === 'slow' ? '加载中…' : '慢速'}</span>
           </button>
-          <button type="button" onClick={() => play('normal', card.word, accent, 'normal')} disabled={loading === 'normal'} aria-label={`常速播放 ${card.word}`} className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border border-line-strong bg-card text-[15px] text-ink active:bg-fill disabled:opacity-50">
+          <button type="button" onClick={() => play('normal', card.word, ACCENT, 'normal')} disabled={loading === 'normal'} aria-label={`常速播放 ${card.word}`} className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border border-line-strong bg-card text-[15px] text-ink active:bg-fill disabled:opacity-50">
             <SpeakerIcon waves={2} />
             <span>{loading === 'normal' ? '加载中…' : '常速'}</span>
           </button>
@@ -143,7 +147,7 @@ export default function CardView({ card, sample }: { card: WordCard; sample: boo
                 <p className="font-latin text-[16px] leading-[1.5]">{example.en}</p>
                 <p className="text-[13px] leading-[1.5] text-muted">{example.zh}</p>
               </div>
-              <button type="button" onClick={() => play(`ex${index}`, example.en, accent, 'normal')} disabled={loading === `ex${index}`} aria-label={`播放例句 ${index + 1}`} className="flex size-11 shrink-0 items-center justify-center rounded-full bg-fill text-ink active:bg-line disabled:opacity-50">
+              <button type="button" onClick={() => play(`ex${index}`, example.en, ACCENT, 'normal')} disabled={loading === `ex${index}`} aria-label={`播放例句 ${index + 1}`} className="flex size-11 shrink-0 items-center justify-center rounded-full bg-fill text-ink active:bg-line disabled:opacity-50">
                 <SpeakerIcon waves={loading === `ex${index}` ? 2 : 1} />
               </button>
             </div>

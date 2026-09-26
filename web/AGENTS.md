@@ -13,3 +13,13 @@
 - 不删除测试或绕过检查来掩盖问题；无需为微小文案或可逆样式改动增加完整测试套件。
 - Git 初始化、提交、推送、合并以及发布不由代码编辑自动授权。
 - 模板升级只影响新项目。已有项目按实际需求升级并记录；不要直接修改 stack-baseline.json 来使检查变绿。
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

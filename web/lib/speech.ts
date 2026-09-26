@@ -15,13 +15,17 @@ export type Speed = 'normal' | 'slow';
 /**
  * 英文音色。
  *
- * 注意：腾讯云目前的英文音色不区分美音和英音，官方音色表里没有 en-US / en-GB 的标注。
- * 所以 uk 暂时和 us 用同一个音色——界面上的美/英切换只改音标显示，不改朗读。
- * 等实际听过几个音色之后，可以用环境变量分别指定。
+ * 2026-09-26 实听了腾讯云全部七个英文音色（101050/101051/101052/501008/501009/
+ * 601000/601001），结论是**都是美音**，没有英音可选，官方音色表也没有
+ * en-US / en-GB 的标注。所以界面暂时去掉了美/英切换，uk 仍映射到同一个音色。
+ * 以后腾讯云出了英音音色，配上 TTS_VOICE_UK 再把切换加回界面即可。
+ *
+ * 默认 501009（WeWinny 外语女声）是听过之后选定的。它属于大模型音色，
+ * 走 10 万字符那档免费额度，不是通用音色的 800 万字符。
  */
 const VOICE: Record<Accent, number> = {
-  us: Number(process.env.TTS_VOICE_US || 101050),
-  uk: Number(process.env.TTS_VOICE_UK || process.env.TTS_VOICE_US || 101050),
+  us: Number(process.env.TTS_VOICE_US || 501009),
+  uk: Number(process.env.TTS_VOICE_UK || process.env.TTS_VOICE_US || 501009),
 };
 
 /** 腾讯云 Speed：-2 是 0.6 倍速，-1 是 0.8 倍速，0 是常速 */

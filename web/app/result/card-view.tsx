@@ -86,6 +86,12 @@ export default function CardView({ card, sample }: { card: WordCard; sample: boo
     if (failed) setNotice(FAIL_MESSAGE[failed]);
   }
 
+  /** 触摸被系统抢走时收尾：把录音停掉丢弃，不送评测，也不卡在「正在录」 */
+  async function cancelRecording() {
+    await recorder.stop();
+    setNotice('录音被打断了，再按一次试试。');
+  }
+
   async function finishRecording() {
     const result = await recorder.stop();
     if (!result) return;
@@ -259,11 +265,25 @@ export default function CardView({ card, sample }: { card: WordCard; sample: boo
           type="button"
           aria-label={`按住跟读 ${target}`}
           disabled={assessing}
-          onPointerDown={assessing ? undefined : startRecording}
-          onPointerUp={finishRecording}
-          onPointerLeave={() => { if (recording) void finishRecording(); }}
+          draggable={false}
+          onPointerDown={event => {
+            if (assessing) return;
+            // iOS 长按默认会触发文本选择、放大镜和拖拽，把 pointer 序列打断。
+            // 必须在这里挡掉，否则按下去录不上音，还会选中页面文字。
+            event.preventDefault();
+            // 手指按住后稍微挪动就会滑出按钮，捕获指针让事件继续回到这里，
+            // 不然会中途误判成松手
+            event.currentTarget.setPointerCapture?.(event.pointerId);
+            void startRecording();
+          }}
+          onPointerUp={event => {
+            event.currentTarget.releasePointerCapture?.(event.pointerId);
+            void finishRecording();
+          }}
+          // 系统手势抢走触摸（来电、通知、手势冲突）时会走这里，必须收尾，否则一直卡在录音中
+          onPointerCancel={() => { void cancelRecording(); }}
           onContextMenu={event => event.preventDefault()}
-          className={`flex size-[72px] touch-none items-center justify-center rounded-full text-white transition-transform ${recording ? 'scale-110 bg-poor' : 'bg-brand active:bg-brand-dark'} ${assessing ? 'opacity-50' : ''}`}
+          className={`flex size-[72px] touch-none items-center justify-center rounded-full text-white transition-transform select-none [-webkit-touch-callout:none] ${recording ? 'scale-110 bg-poor' : 'bg-brand active:bg-brand-dark'} ${assessing ? 'opacity-50' : ''}`}
         >
           <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <rect x="9" y="3" width="6" height="11" rx="3" />

@@ -22,6 +22,14 @@ export function useRecorder() {
   const chunks = useRef<Blob[]>([]);
   const startedAt = useRef(0);
   const autoStop = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /**
+   * 手指已经松开、但麦克风还没准备好。
+   *
+   * 第一次使用时 iOS 会弹权限询问，用户点「允许」的时候早就松手了；
+   * 不记这个标记的话，麦克风准备好之后会自己开始录，然后没人来停，
+   * 界面就永远卡在「正在录」。
+   */
+  const releasedEarly = useRef(false);
 
   const release = useCallback(() => {
     stream.current?.getTracks().forEach(track => track.stop());
@@ -40,9 +48,16 @@ export function useRecorder() {
       return 'no_permission';
     }
     setState('starting');
+    releasedEarly.current = false;
     try {
       const media = await navigator.mediaDevices.getUserMedia({ audio: true });
       stream.current = media;
+      if (releasedEarly.current) {
+        // 等权限的这段时间里手指已经松开了，别开始录
+        release();
+        setState('idle');
+        return null;
+      }
       chunks.current = [];
       const mr = new MediaRecorder(media);
       mr.ondataavailable = event => {
@@ -66,6 +81,8 @@ export function useRecorder() {
   const stop = useCallback(async (): Promise<RecorderStop | null> => {
     const mr = recorder.current;
     if (!mr || state !== 'recording') {
+      // 还在等麦克风就松手了：做个标记，让 start 拿到流之后直接放弃
+      releasedEarly.current = true;
       release();
       setState('idle');
       return null;

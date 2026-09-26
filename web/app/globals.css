@@ -50,6 +50,12 @@ textarea {
 
 button {
   cursor: pointer;
+  /* iOS 长按按钮会弹放大镜、选中文字、还会拖出一个按钮残影，全部关掉 */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 button:disabled {

@@ -1,7 +1,67 @@
 @import "tailwindcss";
-@theme { --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-:root { color: #23332e; background: #f5f6f2; font-family: var(--font-sans); }
-button, input { font: inherit; }
-button { cursor: pointer; }
-button:disabled { cursor: wait; opacity: .6; }
-:focus-visible { outline: 3px solid #68a28b; outline-offset: 4px; }
+
+@theme {
+  /* 中文正文交给系统字体；Fraunces 只用于单词标题，Noto Sans 只用于音标和英文句子 */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Source Han Sans SC", "Noto Sans CJK SC", sans-serif;
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-latin: var(--font-noto-sans), ui-sans-serif, system-ui, sans-serif;
+
+  --color-page: #f5f2ea;
+  --color-card: #ffffff;
+  --color-ink: #1b1a17;
+  --color-ink-soft: #3f3b34;
+  --color-muted: #5c574d;
+  --color-placeholder: #7a7468;
+  --color-line: #e3ddd0;
+  --color-line-soft: #eee9df;
+  --color-line-strong: #d6cfbf;
+  --color-fill: #f0ece3;
+  --color-fill-warm: #ece7dc;
+  --color-brand: #1e5a8a;
+  --color-brand-dark: #153f62;
+  --color-brand-tint: #e6eef5;
+
+  /* 跟读反馈三档 */
+  --color-good: #2f6b45;
+  --color-good-bg: #e4f0e7;
+  --color-fair: #8a4b00;
+  --color-fair-bg: #f8ebd9;
+  --color-poor: #a3261d;
+  --color-poor-bg: #f7e1de;
+}
+
+:root {
+  color: var(--color-ink);
+  background: var(--color-page);
+  font-family: var(--font-sans);
+}
+
+body {
+  /* 手机上下拉回弹时露出的底色也保持一致 */
+  background: var(--color-page);
+  -webkit-text-size-adjust: 100%;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+textarea::placeholder {
+  color: var(--color-placeholder);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-brand);
+  outline-offset: 3px;
+}

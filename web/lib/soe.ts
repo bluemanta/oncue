@@ -59,12 +59,20 @@ function requireEnv(name: string): string {
  *
  * 规则：除 signature 外的参数按字典序排好拼成 URL（不含 wss:// 协议头），
  * 用 SecretKey 做 HMAC-SHA1，再 Base64，最后 URL Encode 挂到 signature 上。
+ *
+ * 关键的一步（踩过坑）：**签名算的是参数的原始值，URL 上带的是编码后的值**。
+ * 两边不能都用编码值。单词没有空格时编码前后一模一样，所以「读单词」一直是好的；
+ * 一到「读例句」，ref_text 里的空格变成 %20，签名就对不上，服务端报 4002 签名错误。
+ * 实测：签原文 + 发编码 → 通过；签编码 + 发编码 → 4002。
  */
 export function buildSignedUrl(params: Record<string, string | number>, appId: string, secretKey: string): string {
-  const sorted = Object.keys(params).sort().map(k => `${k}=${params[k]}`).join('&');
-  const toSign = `${HOST}${PATH_PREFIX}${appId}?${sorted}`;
-  const signature = createHmac('sha1', secretKey).update(toSign).digest('base64');
-  return `wss://${HOST}${PATH_PREFIX}${appId}?${sorted}&signature=${encodeURIComponent(signature)}`;
+  const keys = Object.keys(params).sort();
+  const rawQuery = keys.map(k => `${k}=${params[k]}`).join('&');
+  const sentQuery = keys.map(k => `${k}=${encodeURIComponent(params[k])}`).join('&');
+  const signature = createHmac('sha1', secretKey)
+    .update(`${HOST}${PATH_PREFIX}${appId}?${rawQuery}`)
+    .digest('base64');
+  return `wss://${HOST}${PATH_PREFIX}${appId}?${sentQuery}&signature=${encodeURIComponent(signature)}`;
 }
 
 /** 从 WAV 里取出裸 PCM。找 data 块，找不到就退回跳过标准的 44 字节头 */
@@ -116,7 +124,8 @@ export async function assessPronunciation(
     eval_mode: evalMode,
     score_coeff: Number(process.env.SOE_SCORE_COEFF || 2.0),
     text_mode: 0,
-    ref_text: encodeURIComponent(refText),
+    // 传原始文本，编码交给 buildSignedUrl——签名算原文、URL 带编码值
+    ref_text: refText,
   }, appId, secretKey);
 
   return new Promise<SoeOutcome>(resolve => {

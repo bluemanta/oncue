@@ -75,16 +75,51 @@ export function assessmentFromSoe(card: WordCard, result: SoeResult): Assessment
   );
   const stressWrong = stressFlagged && overall < GOOD_MIN;
 
-  const phonemes: Phoneme[] = scored.map(({ phone, score, index }) => {
-    const bad = score < PHONEME_BAD || (phone.MatchTag !== undefined && !MATCH_OK.has(phone.MatchTag));
-    const isWorst = worst !== null && index === worst.index;
-    return {
-      symbol: toIpa(phone.Phone as string),
-      ok: !bad,
-      // 只给最差的那一个写说明，避免满屏都是标注
-      note: bad && isWorst ? describe(phone.MatchTag, score) : undefined,
-    };
-  });
+  /*
+   * 小方块显示什么，取决于读的是单词还是句子。
+   *
+   * 读单词 → 显示音素，能精确到「哪个音读错了」。
+   * 读例句 → 显示单词。一句八个词能拆出三十来个音素，全糊在屏幕上没法看，
+   *          也违背 PRD「每次只指出最主要的一个问题」。句子的有用粒度是词。
+   */
+  const isSentence = words.length > 1;
+
+  const wordScored = words
+    .map((w, index) => ({ index, word: w, score: w.PronAccuracy ?? 100 }))
+    .filter(x => x.word.Word);
+
+  /*
+   * 挑「读得最差的词」时跳过 a / the / of 这类虚词。
+   *
+   * 实测把 schedule 故意读成 shed，评测确实标出了 schedule，但分最低的是冠词 a。
+   * 这类又短又轻读的词本来就容易拿低分，让它占住「最主要的问题」这个位置，
+   * 用户会收到「这句里 a 读得最不稳」这种毫无用处的建议。
+   * 所以优先在实词里找；实在只有虚词有问题，再退回全部。
+   */
+  const contentWords = wordScored.filter(x => (x.word.Word as string).length >= 3);
+  const pickFrom = contentWords.length ? contentWords : wordScored;
+  const worstWord = pickFrom.length
+    ? pickFrom.reduce((a, b) => (b.score < a.score ? b : a))
+    : null;
+
+  const phonemes: Phoneme[] = isSentence
+    ? wordScored.map(({ word, score, index }) => {
+        const bad = score < PHONEME_BAD || (word.MatchTag !== undefined && !MATCH_OK.has(word.MatchTag));
+        return {
+          symbol: word.Word as string,
+          ok: !bad,
+          note: bad && worstWord !== null && index === worstWord.index ? describe(word.MatchTag, score) : undefined,
+        };
+      })
+    : scored.map(({ phone, score, index }) => {
+        const bad = score < PHONEME_BAD || (phone.MatchTag !== undefined && !MATCH_OK.has(phone.MatchTag));
+        return {
+          symbol: toIpa(phone.Phone as string),
+          ok: !bad,
+          // 只给最差的那一个写说明，避免满屏都是标注
+          note: bad && worst !== null && index === worst.index ? describe(phone.MatchTag, score) : undefined,
+        };
+      });
 
   const hasBadPhoneme = phonemes.some(p => !p.ok);
 
@@ -106,7 +141,9 @@ export function assessmentFromSoe(card: WordCard, result: SoeResult): Assessment
       verdict,
       score,
       headline: '读对了',
-      summary: `每个音都到位，重音也在 ${stressedSyllable} 上。`,
+      summary: isSentence
+        ? '整句都读清楚了，节奏也顺。'
+        : `每个音都到位，重音也在 ${stressedSyllable} 上。`,
       phonemes,
       stress: null,
       fix: null,
@@ -127,17 +164,29 @@ export function assessmentFromSoe(card: WordCard, result: SoeResult): Assessment
     };
   }
 
-  const symbol = worst?.phone.Phone ? toIpa(worst.phone.Phone) : '';
+  // 句子指到「哪个词」，单词指到「哪个音」——粒度对得上用户能改的东西
+  const weakWord = worstWord?.word.Word ?? '';
+  const weakPhone = worst?.phone.Phone ? toIpa(worst.phone.Phone) : '';
+
+  let fix: string;
+  if (isSentence && weakWord) {
+    fix = `这句里 ${weakWord} 读得最不稳。先把这个词单独念准，再连回整句读一遍。`;
+  } else if (!isSentence && weakPhone) {
+    fix = `重点改 /${weakPhone}/ 这个音。先单独把它念准，再放回整个词里读一遍。`;
+  } else {
+    fix = '整体再读慢一点，把每个音都咬清楚。';
+  }
+
   return {
     verdict,
     score,
     headline: verdict === 'poor' ? '不对' : '基本对',
-    summary: verdict === 'poor' ? '有一个音差得比较多。' : '只有 1 个地方要改。',
+    summary: verdict === 'poor'
+      ? (isSentence ? '有一个词差得比较多。' : '有一个音差得比较多。')
+      : '只有 1 个地方要改。',
     phonemes,
     stress: null,
-    fix: symbol
-      ? `重点改 /${symbol}/ 这个音。先单独把它念准，再放回整个词里读一遍。`
-      : '整体再读慢一点，把每个音都咬清楚。',
+    fix,
   };
 }
 

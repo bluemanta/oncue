@@ -97,11 +97,14 @@ export function assessmentFromSoe(card: WordCard, result: SoeResult): Assessment
     verdict = 'fair';
   }
 
+  const score = Math.max(0, Math.min(100, Math.round(overall)));
+
   const stressedSyllable = (card.syllables[card.stressIndex] ?? card.word).toUpperCase();
 
   if (verdict === 'good') {
     return {
       verdict,
+      score,
       headline: '读对了',
       summary: `每个音都到位，重音也在 ${stressedSyllable} 上。`,
       phonemes,
@@ -113,6 +116,7 @@ export function assessmentFromSoe(card: WordCard, result: SoeResult): Assessment
   if (verdict === 'poor' && stressWrong) {
     return {
       verdict,
+      score,
       headline: '不对',
       summary: '重音放错了位置。',
       // 评测只给逐音素的重音标记，定位不到你把重音放到了哪个音节，
@@ -126,6 +130,7 @@ export function assessmentFromSoe(card: WordCard, result: SoeResult): Assessment
   const symbol = worst?.phone.Phone ? toIpa(worst.phone.Phone) : '';
   return {
     verdict,
+    score,
     headline: verdict === 'poor' ? '不对' : '基本对',
     summary: verdict === 'poor' ? '有一个音差得比较多。' : '只有 1 个地方要改。',
     phonemes,

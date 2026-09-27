@@ -22,6 +22,7 @@ export function mockAssessment(card: WordCard, round: number): Assessment {
   if (verdict === 'good') {
     return {
       verdict,
+      score: 96,
       headline: '读对了',
       summary: `每个音都到位，重音也在 ${stressedSyllable(card)} 上。`,
       phonemes: allOk,
@@ -34,6 +35,7 @@ export function mockAssessment(card: WordCard, round: number): Assessment {
     const last = symbols.length - 1;
     return {
       verdict,
+      score: 78,
       headline: '基本对',
       summary: '只有 1 个地方要改。',
       phonemes: allOk.map((p, i) => (i === last ? { ...p, ok: false, note: '没读出来' } : p)),
@@ -46,6 +48,7 @@ export function mockAssessment(card: WordCard, round: number): Assessment {
   const wrongStress = card.stressIndex === 0 ? card.syllables.length - 1 : 0;
   return {
     verdict,
+    score: 52,
     headline: '不对',
     summary: '重音放错了位置。',
     phonemes: allOk,

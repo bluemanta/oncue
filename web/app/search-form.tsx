@@ -36,7 +36,12 @@ export default function SearchForm() {
   }
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-3 rounded-[18px] border border-line bg-card p-4">
+    // 聚焦时由整张卡片响应：边框变品牌色 + 一圈很淡的光晕，跟着卡片圆角走，
+    // 比在输入框上单独描一圈直角粗边好看得多
+    <form
+      onSubmit={submit}
+      className="flex flex-col gap-3 rounded-[18px] border border-line bg-card p-4 transition-[border-color,box-shadow] duration-150 focus-within:border-brand focus-within:shadow-[0_0_0_4px_color-mix(in_srgb,var(--color-brand)_18%,transparent)]"
+    >
       <label htmlFor="q" className="text-[13px] font-medium text-muted">要查的词或句子</label>
       <textarea
         id="q"

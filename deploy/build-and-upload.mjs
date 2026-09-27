@@ -59,12 +59,13 @@ if (realHits === 0) throw new Error('构建产物里找不到真实评测调用�
 console.log('  通过');
 
 console.log('\n== 2. 打包 ==');
-// standalone 里没有 static，要一起打包，服务器上再并进 standalone/.next/static
+// standalone 里既没有 static 也没有 public，两个都要一起打包，
+// 服务器上再分别并进 standalone/.next/static 和 standalone/public
 // COPYFILE_DISABLE + --no-xattrs + --no-mac-metadata：不让 macOS 的扩展属性和
 // ._ 附属文件混进来。否则 Linux 上的 GNU tar 会刷屏警告，还会解出 1500 多个 ._ 文件。
 const tgz = `/tmp/oncue-${release}.tgz`;
 execSync(
-  `COPYFILE_DISABLE=1 tar --no-xattrs --no-mac-metadata -czf ${tgz} -C .next standalone static`,
+  `COPYFILE_DISABLE=1 tar --no-xattrs --no-mac-metadata -czf ${tgz} -C .next standalone static -C .. public`,
   { cwd: WEB, stdio: 'inherit' },
 );
 const size = (fs.statSync(tgz).size / 1024 / 1024).toFixed(1);

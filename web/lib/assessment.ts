@@ -32,6 +32,14 @@ export type StressCompare = {
 
 export type Assessment = {
   verdict: Verdict;
+  /**
+   * 0–100 的总分。
+   *
+   * 只在评测真的跑通时才有。录音无效（太短、太吵、没人声）走的是
+   * AssessmentResult 的失败分支，压根到不了这里——对应 PRD 那条
+   * 「失败要说清楚……不给一个不可靠的分数」。
+   */
+  score: number;
   /** 大字标题：读对了 / 基本对 / 不对 */
   headline: string;
   /** 标题下面那行小字 */

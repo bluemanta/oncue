@@ -37,11 +37,13 @@ mkdir -p "$DIR"
 tar -xzf /tmp/oncue.tgz -C "$DIR" 2>/tmp/oncue-tar.err || { echo "解包失败："; tail -5 /tmp/oncue-tar.err; exit 1; }
 find "$DIR" -name "._*" -delete 2>/dev/null || true
 rm -f /tmp/oncue.tgz
-# Next.js standalone 需要 static 放在 standalone/.next/static 下
+# Next.js standalone 不会自带 static 和 public，要手动并到位
 mv "$DIR/static" "$DIR/standalone/.next/static"
+if [ -d "$DIR/public" ]; then mv "$DIR/public" "$DIR/standalone/public"; fi
 chown -R oncue:oncue "$DIR"
 test -f "$DIR/standalone/server.js" || { echo "缺少 server.js，中止"; exit 1; }
 test -d "$DIR/standalone/.next/static" || { echo "缺少 static，中止"; exit 1; }
+test -f "$DIR/standalone/public/icon-192.png" || { echo "缺少 public 静态文件，中止"; exit 1; }
 echo "解包完成：$(du -sh "$DIR" | cut -f1)"
 ln -sfn "$DIR" /srv/oncue/current
 ls -l /srv/oncue/current

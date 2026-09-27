@@ -94,9 +94,14 @@ export default function FeedbackView({
         <div className={`flex size-12 shrink-0 items-center justify-center rounded-full text-white ${tone.badge}`}>
           <VerdictIcon verdict={assessment.verdict} />
         </div>
-        <div className="flex flex-col gap-0.5">
+        <div className="flex min-w-0 flex-col gap-0.5">
           <div className={`text-xl font-bold ${tone.text}`}>{assessment.headline}</div>
           <div className="text-sm text-ink-soft">{assessment.summary}</div>
+        </div>
+        {/* 分数只在评测真的跑通时才有；录音无效时根本到不了这个界面 */}
+        <div className={`ml-auto shrink-0 text-right ${tone.text}`}>
+          <div className="font-latin text-[30px] leading-none font-bold tabular-nums">{assessment.score}</div>
+          <div className="mt-0.5 text-[11px] opacity-70">分</div>
         </div>
       </div>
 

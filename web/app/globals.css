@@ -67,7 +67,20 @@ textarea::placeholder {
   color: var(--color-placeholder);
 }
 
+/*
+ * 键盘聚焦时的提示。
+ *
+ * 原来是 3px 直角深蓝描边，套在圆角卡片里变成「框中框」，很生硬。
+ * 改细、改淡，并让描边跟随元素本身的圆角。
+ * 输入框不用这套——它由外层卡片整体响应聚焦，见 search-form。
+ */
 :focus-visible {
-  outline: 3px solid var(--color-brand);
-  outline-offset: 3px;
+  outline: 2px solid color-mix(in srgb, var(--color-brand) 55%, transparent);
+  outline-offset: 2px;
+  border-radius: inherit;
+}
+
+textarea:focus-visible,
+textarea:focus {
+  outline: none;
 }

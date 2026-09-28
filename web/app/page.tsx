@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import SearchForm from './search-form';
-import RecentWords from './recent-words';
+import HomeSuggestions from './home-suggestions';
+import AddToHome from './add-to-home';
 
 const TIPS: { icon: ReactNode; title: string; desc: string }[] = [
   {
@@ -45,12 +46,14 @@ export default function Page() {
 
       <div className="mt-9 flex flex-col gap-2">
         <h1 className="text-[28px] leading-[1.3] font-bold">遇到生词，丢进来。</h1>
-        <p className="text-[15px] leading-[1.6] text-muted">单词或整句都可以。给整句，会告诉你它在这句话里是什么意思。</p>
+        <p className="text-[15px] leading-[1.6] text-muted">单词或整句都可以。给你意思、读音和例句，再读给它听——它告诉你读对了没有。</p>
       </div>
 
       <SearchForm />
 
-      <RecentWords />
+      <HomeSuggestions />
+
+      <AddToHome />
 
       <section aria-labelledby="tips-title" className="flex flex-col gap-3.5 px-1">
         <h2 id="tips-title" className="text-[13px] font-medium text-muted">怎么丢进来</h2>

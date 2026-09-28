@@ -6,16 +6,39 @@ import { clearLookups, historyServerSnapshot, historySnapshot, subscribeHistory 
 /** 首页最多露出这么多，再多就把首页撑长了，违背"只有两个动作"的原则 */
 const SHOWN = 12;
 
+/** 新用户的第一个词。选 schedule 是因为它够常见，而且十个人有九个读错开头那个音 */
+const EXAMPLE = "Let's check my schedule for next week.";
+
 /**
- * 最近查过。
+ * 首页输入框下面那一块。
  *
- * 记录只在这台手机上（见 lib/history.ts），所以界面上必须把这件事说清楚，
- * 否则用户会当成云端收藏夹，换手机时才发现全没了。
+ * 两种状态共用一个位置，互斥：
+ * - 没查过词（新用户）→ 给一个能直接点的例子
+ * - 查过词 → 显示"最近查过"
+ *
+ * 之所以写在一个组件里，是因为它们本来就抢同一块地方，分开写要么打架
+ * 要么得在外面再判断一次"有没有记录"，而那个判断只有客户端知道。
  */
-export default function RecentWords() {
+export default function HomeSuggestions() {
   const { list } = useSyncExternalStore(subscribeHistory, historySnapshot, historyServerSnapshot);
 
-  if (list.length === 0) return null;
+  if (list.length === 0) {
+    return (
+      <section aria-labelledby="example-title" className="flex flex-col gap-2.5 px-1">
+        <h2 id="example-title" className="text-[13px] font-medium text-muted">第一次用？点这句试试</h2>
+        <Link
+          href={`/result?q=${encodeURIComponent(EXAMPLE)}`}
+          className="flex items-center gap-3 rounded-[14px] border border-line bg-card px-4 py-3 active:bg-fill"
+        >
+          <span className="min-w-0 flex-1 font-latin text-[15px] leading-[1.5] text-ink-soft">{EXAMPLE}</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0 text-brand">
+            <path d="M5 12h14" />
+            <path d="M13 6l6 6-6 6" />
+          </svg>
+        </Link>
+      </section>
+    );
+  }
 
   return (
     <section aria-labelledby="recent-title" className="flex flex-col gap-3 px-1">

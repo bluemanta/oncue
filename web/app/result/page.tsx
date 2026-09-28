@@ -7,14 +7,29 @@ import { checkQuota, clientIp, countQuota, QUOTA_MESSAGE } from '../../lib/quota
 import CardView from './card-view';
 
 /**
- * 不让搜索引擎收录结果页。
+ * 结果页的标题和分享卡片。
  *
- * 这个地址每被打开一次就是一次大模型调用，被爬虫抓等于替我们花钱。
- * robots.txt 里也禁了（见 app/robots.ts），这里是第二道。
+ * `robots` 那两项是不让搜索引擎收录：这个地址每被打开一次就是一次大模型
+ * 调用，被爬虫抓等于替我们花钱。robots.txt 里也禁了（见 app/robots.ts），
+ * 这里是第二道。
+ *
+ * 标题带上查的内容，这样分享到群里、或者手机上开着好几个标签时能认出是哪个词。
+ * 这里只用得到地址栏上的文字，不碰大模型，所以不花钱。
  */
-export const metadata: Metadata = {
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ q?: string }> }): Promise<Metadata> {
+  const { q } = await searchParams;
+  const text = q?.trim().replace(/\s+/g, ' ') ?? '';
+  const short = text.length > 24 ? `${text.slice(0, 24)}…` : text;
+
+  return {
+    title: short ? `${short} · OnCue单词` : 'OnCue单词',
+    robots: { index: false, follow: false },
+    openGraph: {
+      title: short ? `${short} · OnCue单词` : 'OnCue单词',
+      description: '意思、读音、例句，再跟读一遍看读得对不对。',
+    },
+  };
+}
 
 function Shell({ children }: { children: ReactNode }) {
   return (

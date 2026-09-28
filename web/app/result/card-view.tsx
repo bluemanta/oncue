@@ -1,7 +1,8 @@
 "use client";
 import Link from 'next/link';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
 import type { Accent, WordCard } from '../../lib/card';
+import { historyServerSnapshot, historySnapshot, recordLookup, subscribeHistory } from '../../lib/history';
 import { FAIL_MESSAGE, type Assessment, type AssessmentResult } from '../../lib/assessment';
 import { mockAssessment } from '../../lib/assessment-mock';
 import { useSpeech } from './use-speech';
@@ -68,7 +69,7 @@ function highlightTarget(sentence: string, surface: string | null): ReactNode {
   );
 }
 
-export default function CardView({ card, sample }: { card: WordCard; sample: boolean }) {
+export default function CardView({ card, sample, query }: { card: WordCard; sample: boolean; query: string }) {
   const [readExample, setReadExample] = useState(false);
   const [notice, setNotice] = useState('');
   const [assessment, setAssessment] = useState<Assessment | null>(null);
@@ -76,6 +77,15 @@ export default function CardView({ card, sample }: { card: WordCard; sample: boo
   const [assessing, setAssessing] = useState(false);
   const { play, loading, error } = useSpeech();
   const recorder = useRecorder();
+
+  // 记录只写在这台手机上，不上云（见 lib/history.ts）
+  useEffect(() => {
+    recordLookup(card.word, query);
+  }, [card.word, query]);
+
+  /** 上次查这个词是哪天（只在不是今天时才有值），对应 PRD F6 的「你某天查过」 */
+  const { seenBefore } = useSyncExternalStore(subscribeHistory, historySnapshot, historyServerSnapshot);
+  const seenDay = seenBefore && seenBefore.word.toLowerCase() === card.word.toLowerCase() ? seenBefore.day : null;
 
   /** 跟读的目标：单词，或者第一句例句 */
   const target = readExample ? (card.examples[0]?.en ?? card.word) : card.word;
@@ -178,6 +188,13 @@ export default function CardView({ card, sample }: { card: WordCard; sample: boo
           <span className="mr-1.5 text-xs font-medium text-muted">原句</span>
           {highlightTarget(card.sourceSentence, card.surface)}
         </div>
+      )}
+
+      {/* PRD F6：再查同一个词时提醒一句。没读熟才会再查，这句话本身就是提示 */}
+      {seenDay && (
+        <p className="px-1 text-[13px] leading-[1.5] text-muted">
+          你 {seenDay} 查过这个词，这次把它读熟。
+        </p>
       )}
 
       <section className="flex flex-col gap-2.5 rounded-[20px] border border-line bg-card p-5">

@@ -74,5 +74,5 @@ export default async function ResultPage({ searchParams }: { searchParams: Promi
     );
   }
 
-  return <CardView card={result.card} sample={provider.name === 'sample'} />;
+  return <CardView card={result.card} sample={provider.name === 'sample'} query={query} />;
 }

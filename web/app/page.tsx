@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import SearchForm from './search-form';
+import RecentWords from './recent-words';
 
 const TIPS: { icon: ReactNode; title: string; desc: string }[] = [
   {
@@ -48,6 +49,8 @@ export default function Page() {
       </div>
 
       <SearchForm />
+
+      <RecentWords />
 
       <section aria-labelledby="tips-title" className="flex flex-col gap-3.5 px-1">
         <h2 id="tips-title" className="text-[13px] font-medium text-muted">怎么丢进来</h2>

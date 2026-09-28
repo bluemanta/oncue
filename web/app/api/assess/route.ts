@@ -2,6 +2,7 @@ import { parseWordCard, type WordCard } from '../../../lib/card';
 import { FAIL_MESSAGE, type AssessmentResult } from '../../../lib/assessment';
 import { assessmentFromSoe } from '../../../lib/assessment-from-soe';
 import { assessPronunciation, type EvalMode } from '../../../lib/soe';
+import { checkQuota, clientIp, countQuota, QUOTA_MESSAGE } from '../../../lib/quota';
 
 /** 16k 单声道 16bit：1 秒 32000 字节。低于 0.4 秒不送评测 */
 const MIN_PCM_BYTES = 12_800;
@@ -39,6 +40,14 @@ export async function POST(request: Request) {
     const body: AssessmentResult = { ok: false, reason: 'too_short', message: FAIL_MESSAGE.too_short };
     return Response.json(body, { status: 200 });
   }
+
+  // 每次跟读都是一次真实的评测调用，没有缓存可言，所以检查完直接计数
+  const ip = clientIp(request.headers);
+  const quota = checkQuota('assess', ip);
+  if (!quota.ok) {
+    return Response.json({ error: 'quota_exceeded', message: QUOTA_MESSAGE[quota.scope] }, { status: 429 });
+  }
+  countQuota('assess', ip);
 
   const evalMode: EvalMode = mode === 'word' ? 0 : 1;
   const outcome = await assessPronunciation(buffer, refText, evalMode);

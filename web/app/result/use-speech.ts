@@ -31,6 +31,12 @@ export function useSpeech() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text, accent, speed }),
         });
+        // 到了每日上限：照实说明，别让人反复点
+        if (response.status === 429) {
+          const body = await response.json().catch(() => null);
+          setError(body?.message || '今天的读音次数到上限了，明天再来。');
+          return;
+        }
         if (!response.ok) throw new Error('speech_failed');
         url = URL.createObjectURL(await response.blob());
         cache.current.set(key, url);

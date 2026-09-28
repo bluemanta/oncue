@@ -1,7 +1,20 @@
 import Link from 'next/link';
+import { headers } from 'next/headers';
+import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { getCardProvider } from '../../lib/providers';
+import { checkQuota, clientIp, countQuota, QUOTA_MESSAGE } from '../../lib/quota';
 import CardView from './card-view';
+
+/**
+ * 不让搜索引擎收录结果页。
+ *
+ * 这个地址每被打开一次就是一次大模型调用，被爬虫抓等于替我们花钱。
+ * robots.txt 里也禁了（见 app/robots.ts），这里是第二道。
+ */
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 function Shell({ children }: { children: ReactNode }) {
   return (
@@ -31,7 +44,23 @@ export default async function ResultPage({ searchParams }: { searchParams: Promi
     );
   }
 
+  // 每日上限：这个地址是开放的 GET，不设闸就等于让人替我们花钱
+  const ip = clientIp(await headers());
+  const quota = checkQuota('card', ip);
+  if (!quota.ok) {
+    return (
+      <Shell>
+        <div className="flex flex-col gap-1.5 rounded-[20px] border border-line bg-card p-5">
+          <p className="text-[15px] font-medium">{QUOTA_MESSAGE[quota.scope]}</p>
+          <p className="text-[13px] leading-[1.6] text-muted">已经查过的词还能继续听读音和跟读。</p>
+        </div>
+      </Shell>
+    );
+  }
+
   const provider = getCardProvider();
+  // 手写样本不花钱，不占额度
+  if (provider.name !== 'sample') countQuota('card', ip);
   const result = await provider.generateCard(query);
 
   if (!result.ok) {

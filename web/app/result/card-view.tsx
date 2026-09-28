@@ -118,6 +118,12 @@ export default function CardView({ card, sample }: { card: WordCard; sample: boo
       form.append('card', JSON.stringify(card));
 
       const response = await fetch('/api/assess', { method: 'POST', body: form });
+      // 到了每日上限：照实说明，别让人反复重读
+      if (response.status === 429) {
+        const body = await response.json().catch(() => null);
+        setNotice(body?.message || '今天的跟读次数到上限了，明天再来。');
+        return;
+      }
       if (!response.ok) throw new Error('assess_failed');
       const data: AssessmentResult = await response.json();
       if (!data.ok) {

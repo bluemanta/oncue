@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
 import type { Accent, WordCard } from '../../lib/card';
 import { historyServerSnapshot, historySnapshot, recordLookup, subscribeHistory } from '../../lib/history';
-import { FAIL_MESSAGE, type Assessment, type AssessmentResult } from '../../lib/assessment';
+import type { Assessment, AssessmentResult } from '../../lib/assessment';
+import { micFailureMessage } from './mic-help';
 import { mockAssessment } from '../../lib/assessment-mock';
 import { useSpeech } from './use-speech';
 import { useRecorder } from './use-recorder';
@@ -93,7 +94,7 @@ export default function CardView({ card, sample, query }: { card: WordCard; samp
   async function startRecording() {
     setNotice('');
     const failed = await recorder.start();
-    if (failed) setNotice(FAIL_MESSAGE[failed]);
+    if (failed) setNotice(micFailureMessage(failed));
   }
 
   /** 触摸被系统抢走时收尾：把录音停掉丢弃，不送评测，也不卡在「正在录」 */
@@ -106,7 +107,7 @@ export default function CardView({ card, sample, query }: { card: WordCard; samp
     const result = await recorder.stop();
     if (!result) return;
     if (!result.ok) {
-      setNotice(FAIL_MESSAGE[result.reason]);
+      setNotice(micFailureMessage(result.reason));
       return;
     }
     if (MOCK_ASSESSMENT) {

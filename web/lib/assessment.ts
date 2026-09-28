@@ -66,7 +66,8 @@ export const FAIL_MESSAGE: Record<FailReason, string> = {
   too_short: '录音太短了，按住多读一会儿再松手。',
   too_quiet: '声音太小或者环境太吵，换个安静点的地方再试。',
   no_speech: '没听到人声，确认一下麦克风有没有被挡住。',
-  no_permission: '浏览器没给麦克风权限。在网址栏左边的图标里打开它。',
+  // 这条的实际文案按打开方式分开给（微信 / iOS / 其它），见 app/result/mic-help.ts
+  no_permission: '没拿到麦克风权限，允许之后再按住试一次。',
   service_error: '评测服务暂时没响应，稍后再试一次。',
 };
 

@@ -1,21 +1,58 @@
-# 新项目
+# OnCue单词 · web
 
-来自 project-starter 0.1.0 / web-app。项目名、选型原因与技术例外见 tech-profile.json。
+手机网页本体。来自 project-starter 0.1.0 的 web-app 模板；选型原因和依赖例外见 `tech-profile.json`，协作约定见 `AGENTS.md`，技术标准见 `STACK.md`。
+
+产品背景和整体说明在仓库根的 [CLAUDE.md](../CLAUDE.md)。
 
 ## 开始
 
-使用 Node.js 24 LTS（有 nvm 时执行 `nvm use`），运行 `npm ci`，然后 `npm run dev`。默认只监听本机；以终端输出的实际地址为准，端口冲突先检查占用者。
+需要 Node.js 24（有 nvm 就 `nvm use`）。
 
-- `npm run check`：技术栈、TypeScript 和 ESLint。
-- `npm run build`：构建。
-- `npm run start`：构建后运行生产服务。
+```sh
+npm ci
+cp .env.example .env.local   # 填值，文件里每个变量都有注释
+npm run dev                  # http://127.0.0.1:3000，只监听本机
+```
 
-本模板带一个 /api/items 示例接口，做输入验证并返回条目，不保存。 页面清单在刷新后重置。初始无数据库、登录、支付、邮件或外部模型调用。
+`.env.example` 是本项目配置信息最全的地方：用哪个模型、为什么不能用 deepseek-r1、音色 501009 是怎么选的、每日上限怎么调，都写在注释里。
 
-## 首次验收
+| 命令 | 做什么 |
+| --- | --- |
+| `npm run check` | 技术栈一致性 + TypeScript + ESLint，改完代码至少跑这个 |
+| `npm run build` | 构建。动了路由、依赖或构建配置时跑一遍 |
+| `npm run start` | 跑构建后的生产版本 |
 
-打开页面 → 输入“完成第一次验证” → 添加 → 勾选 → 显示“已完成 1 / 1”；在手机尺寸下检查没有横向溢出。修改相关功能后复验。真实持久化、认证或公网部署应按新增需求单独验证。
+检查通过不等于在手机上好用，该看的界面还是要真机看一眼。
 
-## 后续开发
+## 目录
 
-先读 AGENTS.md、STACK.md；业务扩展应更新 tech-profile.json。凭证使用 .env.local，私人数据使用 data/ 或仓库外目录，并落实备份。模板更新不自动覆盖本项目。
+```
+app/                页面与接口
+  page.tsx          首页（输入框、一键粘贴）
+  search-form.tsx   输入表单
+  home-suggestions.tsx  输入框下面那块：没记录时给示例，有记录时显示"最近查过"
+  add-to-home.tsx   用过两次之后提示"添加到主屏幕"
+  result/           结果卡片 + 跟读反馈两屏
+  api/speech/       读音接口（语音合成 + COS 缓存）
+  api/assess/       跟读评测接口（口语评测）
+  robots.ts         禁止爬虫抓 /result 和 /api，它们每次调用都花钱
+  globals.css       配色、字体、全局样式
+lib/                服务端能力与共享逻辑
+  card.ts           结果卡片的数据结构与校验
+  prompt.ts         给大模型的提示词
+  providers/        出卡片的统一接口：types(契约) / lkeap(真接口) / sample(离线样本)
+  speech.ts         语音合成 + COS 缓存
+  soe.ts            口语评测（WebSocket，签名是 HMAC-SHA1，和别处不一样）
+  assessment*.ts    三档反馈的数据结构、分数翻译、假数据
+  quota.ts          每日调用上限，花钱的最后一道闸
+  history.ts        查词记录，只存在用户自己的手机上
+scripts/            技术栈检查、口语评测冒烟测试、图标生成
+```
+
+## 几条容易踩的
+
+- **密钥只放 `.env.local`**，不进代码、不进仓库。只提交不含真实值的 `.env.example`。
+- **`NEXT_PUBLIC_MOCK_ASSESSMENT` 线上必须留空。** 假的发音反馈比没有反馈更糟，部署脚本里有一道卡关专门查这个。
+- **离线也能调界面**：`CARD_PROVIDER=sample` 用手写样本出卡片，不花钱、不用密钥。
+- **新增重要依赖**要在 `tech-profile.json` 的 `exceptions` 里补一条，写清用途和代价。
+- 开发服务只绑 `127.0.0.1`；端口冲突先确认占用者，别直接杀别人的进程。

@@ -49,7 +49,17 @@ export default function Page() {
         <p className="text-[15px] leading-[1.6] text-muted">单词或整句都可以。给你意思、读音和例句，再读给它听——它告诉你读对了没有。</p>
       </div>
 
-      <SearchForm />
+      {/*
+        隐私提示贴着输入框放，不放页脚——它说的正是"你正要粘进去的东西会怎么样"，
+        在那一刻看到才有用。目标用户会贴客户 RFP 和邮件原文，这句必须在。
+        两件事要分开说清楚：粘贴的内容会外发，录音不保存。别混成"我们不保存你的数据"。
+      */}
+      <div className="flex flex-col gap-2.5">
+        <SearchForm />
+        <p className="px-1 text-[13px] leading-[1.6] text-muted">
+          内容会发送到云端 AI 处理，别粘贴敏感或客户保密的信息。跟读录音只用于当次评测，评完即删。
+        </p>
+      </div>
 
       <HomeSuggestions />
 
